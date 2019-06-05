@@ -441,6 +441,98 @@ class SkeletonTableStory implements OnInit, OnChanges {
 	}
 }
 
+
+@Component({
+	selector: "app-small-table",
+	template: `
+		<ng-template #customSmallTemplate let-data="data">
+			<ibm-label>
+				{{data.col}}
+				<div>{{data.row}}</div>
+			</ibm-label>
+		</ng-template>
+		<ibm-table
+			[model]="model"
+			[size]="size"
+			[showSelectionColumn]="showSelectionColumn"
+			[small]="small"
+			[striped]="striped"
+			(sort)="customSort($event)">
+		</ibm-table>
+	`
+})
+class SmallTableStory implements OnInit {
+	@Input() model = new TableModel();
+	@Input() size = "md";
+	@Input() showSelectionColumn = true;
+	@Input() striped = true;
+	@Input() small = true;
+
+	@ViewChild("customSmallTemplate")
+	protected customSmallTemplate: TemplateRef<any>;
+
+	ngOnInit() {
+		this.model.header = [];
+		this.model.data = [
+			[
+				new TableItem({
+					data: {col: "ColumnA", row: "Row1A"},
+					template: this.customSmallTemplate
+				}),
+				new TableItem({
+					data: {col: "ColumnB", row: "Row1B"},
+					template: this.customSmallTemplate
+				}),
+				new TableItem({
+					data: {col: "ColumnC", row: "Row1C"},
+					template: this.customSmallTemplate
+				})
+			],
+			[
+				new TableItem({
+					data: {col: "ColumnA", row: "Row2A"},
+					template: this.customSmallTemplate,
+					style: {"width": "auto"}
+				}),
+				new TableItem({
+					data: {col: "ColumnB", row: "Row2B"},
+					template: this.customSmallTemplate
+				}),
+				new TableItem({
+					data: {col: "ColumnC", row: "Row2C"},
+					template: this.customSmallTemplate
+				})
+			],
+			[
+				new TableItem({
+					data: {col: "ColumnA", row: "Row3A"},
+					template: this.customSmallTemplate
+				}),
+				new TableItem({
+					data: {col: "ColumnB", row: "Row3B"},
+					template: this.customSmallTemplate
+				}),
+				new TableItem({
+					data: {col: "ColumnC", row: "Row3C"},
+					template: this.customSmallTemplate
+				})
+			]
+		];
+	}
+
+	customSort(index: number) {
+		this.sort(this.model, index);
+	}
+
+	sort(model, index: number) {
+		if (model.header[index].sorted) {
+			// if already sorted flip sorting direction
+			model.header[index].ascending = model.header[index].descending;
+		}
+		model.sort(index);
+	}
+}
+
 storiesOf("Table", module).addDecorator(
 		moduleMetadata({
 			imports: [
@@ -457,7 +549,8 @@ storiesOf("Table", module).addDecorator(
 				ExpansionTableStory,
 				OverflowTableStory,
 				PaginationTableStory,
-				SkeletonTableStory
+				SkeletonTableStory,
+				SmallTableStory
 			]
 		})
 	)
@@ -665,5 +758,21 @@ storiesOf("Table", module).addDecorator(
 			size: select("size", {Small: "sm", Normal: "md", Large: "lg"}, "md"),
 			striped: boolean("striped", false)
 		}
+	}))
+	.add("small breakpoint", () => ({
+		template: `
+			<div style="width: 320px">
+				<app-small-table
+					[size]="size"
+					[showSelectionColumn]="showSelectionColumn"
+					[striped]="striped">
+				</app-small-table>
+			</div>
+		`,
+		props: {
+			size: select("size", {Small: "sm", Normal: "md", Large: "lg"}, "md"),
+			showSelectionColumn: boolean("showSelectionColumn", true),
+			small: boolean("small", true),
+			striped: boolean("striped", true)
+		}
 	}));
-

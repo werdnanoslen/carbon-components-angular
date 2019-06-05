@@ -161,6 +161,31 @@ import { I18n } from "./../i18n/i18n.module";
  */
 @Component({
 	selector: "ibm-table",
+	styles: [`
+		tbody td {
+			padding-top: 1rem;
+			padding-bottom: 0.5rem;
+			vertical-align: top;
+		}
+		.td-small {
+			display: block;
+		}
+		.td-small:last-child {
+			padding-bottom: 1rem;
+		}
+		.td-small ~ .td-small {
+			border-top: none;
+		}
+		tr:hover .td-small {
+			border-right: 1px solid #3d70b2;
+		}
+		tr:hover .td-small:not(:last-child) {
+			border-bottom: none !important;
+		}
+		tbody td:first-of-type {
+			width: 10px;
+		}
+	`],
 	template: `
 	<table
 	class="bx--data-table-v2"
@@ -168,12 +193,14 @@ import { I18n } from "./../i18n/i18n.module";
 		'bx--data-table-v2--compact': size === 'sm',
 		'bx--data-table-v2--tall': size === 'lg',
 		'bx--data-table-v2--zebra': striped,
+		'bx--data-table-v2--small': small,
 		'bx--skeleton': skeleton
 	}">
 		<thead>
 			<tr>
 				<th *ngIf="model.hasExpandableRows()"></th>
-				<th *ngIf="!skeleton && showSelectionColumn" style="width: 10px;">
+				<th *ngIf="!skeleton && showSelectionColumn" style="width: 10px;"
+					[attr.colspan]="small ? '2' : ''">
 					<ibm-checkbox
 						inline="true"
 						[size]="size !== ('lg' ? 'sm' : 'md')"
@@ -185,7 +212,7 @@ import { I18n } from "./../i18n/i18n.module";
 				</th>
 				<ng-container *ngFor="let column of model.header; let i = index">
 					<th [ngClass]='{"thead_action": column.filterTemplate || this.sort.observers.length > 0}'
-					*ngIf="column.visible"
+					*ngIf="column.visible && !small"
 					[class]="column.className"
 					[ngStyle]="column.style"
 					[draggable]="columnsDraggable"
@@ -326,7 +353,7 @@ import { I18n } from "./../i18n/i18n.module";
 					</td>
 					<ng-container *ngFor="let item of row; let i = index">
 						<td *ngIf="model.header[i].visible"
-							[class]="model.header[i].className"
+							[class]="model.header[i].className + (small ? ' td-small' : '')"
 							[ngStyle]="model.header[i].style">
 							<ng-container *ngIf="!item.template">{{item.data}}</ng-container>
 							<ng-template
@@ -568,6 +595,14 @@ export class Table {
 	 * @memberof Table
 	 */
 	selectAllCheckboxSomeSelected = false;
+
+	/**
+	 * Set to true when the table is at the small breakpoint
+	 *
+	 * @type {boolean}
+	 * @memberof Table
+	 */
+	@Input() small = false;
 
 	/**
 	 * Set to `false` to remove table rows (zebra) stripes.
